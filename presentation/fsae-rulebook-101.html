@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formula SAE (IC) 規則書新手入門指南 — LLM Wiki 教學簡報</title>
+<style>
+  :root {
+    --bg: #0b0f19;
+    --surface: #131a2a;
+    --surface-2: #1c253b;
+    --border: rgba(148, 163, 184, 0.18);
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --red: #f43f5e;
+    --red-dim: rgba(244, 63, 94, 0.16);
+    --amber: #f59e0b;
+    --amber-dim: rgba(245, 158, 11, 0.16);
+    --cyan: #38bdf8;
+    --cyan-dim: rgba(56, 189, 248, 0.15);
+    --green: #34d399;
+    --green-dim: rgba(52, 211, 153, 0.15);
+    --purple: #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top bar */
+  .topbar {
+    height: 48px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(11, 15, 25, 0.92);
+    border-bottom: 1px solid var(--border);
+    z-index: 20;
+    flex-shrink: 0;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.4px;
+  }
+  .brand-badge {
+    background: var(--red);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+  }
+  .top-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn:hover { background: #263350; border-color: rgba(255,255,255,0.28); }
+  .slide-counter {
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: var(--muted);
+    min-width: 58px;
+    text-align: center;
+  }
+
+  /* Progress bar */
+  .progress-track {
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    width: 100%;
+    flex-shrink: 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red), var(--amber));
+    width: 8.33%;
+    transition: width 0.25s ease;
+  }
+
+  /* Deck stage */
+  .stage {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: 32px 52px 40px;
+    display: none;
+    flex-direction: column;
+    overflow-y: auto;
+    animation: fadeIn 0.24s ease;
+  }
+  .slide.active { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide-header {
+    margin-bottom: 20px;
+    flex-shrink: 0;
+  }
+  .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .kicker .pill {
+    background: var(--red-dim);
+    color: var(--red);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+  }
+  h1 {
+    font-size: clamp(28px, 3.6vw, 44px);
+    line-height: 1.18;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  h2 {
+    font-size: clamp(22px, 2.4vw, 31px);
+    line-height: 1.25;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  /* Grids & Cards */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .grid-60-40 { display: grid; grid-template-columns: 1.35fr 1fr; gap: 20px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card p, .card li {
+    font-size: 14px;
+    line-height: 1.62;
+    color: #cbd5e1;
+  }
+  .card ul { padding-left: 18px; }
+  .card li { margin-bottom: 6px; }
+  .card strong { color: #fff; }
+
+  .accent-red { border-top: 3px solid var(--red); }
+  .accent-amber { border-top: 3px solid var(--amber); }
+  .accent-cyan { border-top: 3px solid var(--cyan); }
+  .accent-green { border-top: 3px solid var(--green); }
+  .accent-purple { border-top: 3px solid var(--purple); }
+
+  .stat-row {
+    display: flex;
+    gap: 14px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    flex: 1;
+    min-width: 130px;
+  }
+  .stat .num {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--amber);
+    line-height: 1.1;
+  }
+  .stat .num.red { color: var(--red); }
+  .stat .num.cyan { color: var(--cyan); }
+  .stat .num.green { color: var(--green); }
+  .stat .lbl {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .callout {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: var(--amber-dim);
+    border-left: 4px solid var(--amber);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #fef3c7;
+  }
+  .callout.red {
+    background: var(--red-dim);
+    border-left-color: var(--red);
+    color: #ffe4e6;
+  }
+  .callout.cyan {
+    background: var(--cyan-dim);
+    border-left-color: var(--cyan);
+    color: #e0f2fe;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    background: var(--surface);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  th, td {
+    padding: 9px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.45;
+  }
+  th {
+    background: var(--surface-2);
+    color: #e2e8f0;
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: 0.3px;
+  }
+  tr:last-child td { border-bottom: none; }
+  .code-tag {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    background: var(--surface-2);
+    color: var(--cyan);
+    border: 1px solid rgba(56,189,248,0.28);
+  }
+  .code-tag.red { color: var(--red); border-color: rgba(244,63,94,0.35); }
+  .code-tag.amber { color: var(--amber); border-color: rgba(245,158,11,0.35); }
+  .code-tag.dim { color: var(--muted); border-color: var(--border); text-decoration: line-through; }
+
+  /* Cover slide */
+  .cover {
+    justify-content: center;
+    background:
+      radial-gradient(circle at 82% 20%, rgba(244, 63, 94, 0.18), transparent 42%),
+      radial-gradient(circle at 15% 85%, rgba(56, 189, 248, 0.14), transparent 40%);
+  }
+  .cover-box { max-width: 920px; }
+  .cover-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+  }
+  .meta-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #cbd5e1;
+  }
+
+  /* Interactive Gauntlet (Slide 7) */
+  .gauntlet-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .gauntlet-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 10px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .gauntlet-btn:hover { border-color: var(--amber); }
+  .gauntlet-btn.active {
+    background: var(--red-dim);
+    border-color: var(--red);
+  }
+  .gauntlet-btn .step-num {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--amber);
+    letter-spacing: 0.8px;
+  }
+  .gauntlet-btn .step-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 3px;
+  }
+
+  /* Interactive Score Bars (Slide 8) */
+  .score-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 9px;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 8px;
+    transition: background 0.15s;
+  }
+  .score-bar-row:hover, .score-bar-row.selected { background: rgba(255,255,255,0.06); }
+  .score-label { width: 150px; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .score-track { flex: 1; height: 14px; background: rgba(255,255,255,0.07); border-radius: 999px; overflow: hidden; }
+  .score-fill { height: 100%; border-radius: 999px; }
+  .score-pts { width: 58px; text-align: right; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* Source footer */
+  .src-foot {
+    margin-top: auto;
+    padding-top: 12px;
+    font-size: 11.5px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid rgba(148,163,184,0.1);
+  }
+
+  /* Drawer (TOC) */
+  .drawer {
+    position: fixed;
+    top: 51px;
+    right: 0;
+    bottom: 0;
+    width: 340px;
+    background: #0f1626;
+    border-left: 1px solid var(--border);
+    padding: 18px;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.22s ease;
+    z-index: 30;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer h4 { font-size: 13px; color: var(--muted); margin-bottom: 12px; letter-spacing: 0.6px; }
+  .drawer-item {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text);
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    display: flex;
+    gap: 10px;
+  }
+  .drawer-item:hover { background: var(--surface-2); }
+  .drawer-item.active { background: var(--red-dim); border-color: rgba(244,63,94,0.4); }
+  .drawer-num { color: var(--amber); font-weight: 700; min-width: 22px; }
+
+  @media (max-width: 900px) {
+    .slide { padding: 20px 22px 28px; }
+    .grid-2, .grid-3, .grid-4, .grid-60-40, .gauntlet-tabs { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-badge">FSAE IC</span>
+    <span>Formula SAE 規則書新手入門指南</span>
+  </div>
+  <div class="top-controls">
+    <button class="btn" id="prevBtn" title="上一頁 (←)">← 上一頁</button>
+    <span class="slide-counter" id="counter">1 / 12</span>
+    <button class="btn" id="nextBtn" title="下一頁 (→ / Space)">下一頁 →</button>
+    <button class="btn" id="menuBtn" title="目錄導覽 (M)">☰ 目錄</button>
+  </div>
+</header>
+<div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+
+<aside class="drawer" id="drawer">
+  <h4>簡報章節目錄（按 M 切換）</h4>
+  <div id="drawerList"></div>
+</aside>
+
+<main class="stage">
+
+  <!-- SLIDE 1: COVER -->
+  <section class="slide cover active" data-title="封面：Formula SAE (IC) 規則書入門">
+    <div class="cover-box">
+      <div class="kicker"><span class="pill">LLM WIKI 教學簡報</span> 2027 FSAE RULES V1 · IC 內燃機組</div>
+      <h1>Formula SAE (IC)<br>規則書新手入門指南</h1>
+      <p class="subtitle" style="font-size:17px; max-width:740px; margin-top:14px;">
+        沒參加過方程式賽車隊也能一次看懂！從 <strong>147 頁官方規則書</strong>出發，拆解車架安全、20 mm 進氣限流閥、車檢四關卡、1,000 分賽制、2027 靜態新制與日本站（FSAEJ）在地差異。
+      </p>
+      <div class="cover-meta">
+        <div class="meta-chip">📚 知識來源：<strong>9 份官方 PDF</strong> → 9 頁 LLM Wiki</div>
+        <div class="meta-chip">🏎️ 聚焦組別：<strong>IC 內燃機組</strong>（含日本站差異）</div>
+        <div class="meta-chip">⌨️ 操作方式：方向鍵 <strong>← / →</strong> 或點選互動圖表</div>
+      </div>
+    </div>
+    <div class="src-foot">
+      <span>Wiki 入口：wiki/index.md ｜ 原始資料：raw/（9 份官方 PDF）</span>
+      <span>按 → 或空白鍵開始瀏覽</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: WHAT IS FSAE -->
+  <section class="slide" data-title="什麼是 FSAE？模擬新創車廠造車">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">GR 總則</span> STEP 1 · 建立核心觀念</div>
+      <h2>FSAE 不只是比誰快，而是「模擬新創車廠造車」</h2>
+      <p class="subtitle">規則書第一頁（GR.1）就點破：評審要找的不是最貴的賽車，而是最能「獲利量產並安全完賽」的工程團隊。</p>
+    </div>
+    <div class="grid-2">
+      <div class="card accent-cyan">
+        <h3>🏢 競賽核心情境（GR.1.4）</h3>
+        <ul>
+          <li>每支大學車隊扮演一家<strong>原型車工程公司</strong>，親手完成構思、設計、製造、測試與發表。</li>
+          <li>除了賽道速度，還同時評比：<strong>可靠度、成本、人因工程、可維護性、可製造性與美觀</strong>。</li>
+          <li><strong>限制框內的工程自由</strong>：用 710 cc 與 20 mm 進氣口徑鎖住馬力上限，讓大家靠輕量化、底盤調校與系統整合決勝負。</li>
+        </ul>
+      </div>
+      <div class="card accent-red">
+        <h3>🚨 新手必記的四條「紅線總則」</h3>
+        <ul>
+          <li><strong>GR.4.2 當年度唯一有效</strong>：去年的規則解釋或判例對今年一概無效。</li>
+          <li><strong>GR.4.6 違反「規則意圖」＝違規</strong>：切勿鑽文字漏洞，安全與公平的立法意圖高於字面。</li>
+          <li><strong>GR.5.2–5.3 服從裁判指令</strong>：不聽指令直接扣 <strong>25 分</strong>，與官員爭執最重可全隊取消資格。</li>
+          <li><strong>GR.3.5 遲到即棄權</strong>：任何項目未準時到場直接棄權，沒有補考。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="num">147 頁</div><div class="lbl">2027 官方規則書 V1 總頁數</div></div>
+      <div class="stat"><div class="num cyan">1,000 分</div><div class="lbl">靜態 325 + 動態 675 滿分</div></div>
+      <div class="stat"><div class="num red">0 寬容值</div><div class="lbl">IN.2.2 規定尺寸皆為絕對值</div></div>
+      <div class="stat"><div class="num green">≥ 4 位</div><div class="lbl">D.7.1 跑滿動態項目所需最少車手數</div></div>
+    </div>
+    <div class="src-foot">
+      <span>Wiki：wiki/rulebook-structure.md</span>
+      <span>來源：FSAE_Rules_2027_V1.pdf (GR.1–GR.5, IN.2.2, D.7.1)</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: RULEBOOK MAP -->
+  <section class="slide" data-title="147 頁規則書怎麼讀？12 大章節地圖">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">TOC 導覽</span> STEP 2 · 讀懂章節代碼</div>
+      <h2>147 頁規則書怎麼讀？一張表看懂 12 大英文字母章節</h2>
+      <p class="subtitle">所有條文都以英文字母開頭編碼（如 IC.2.4.3），IC 組新手只需專注 11 個章節，直接跳過 EV 電動車專章。</p>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:82px;">章節碼</th>
+          <th style="width:210px;">英文名稱</th>
+          <th style="width:70px;">頁碼</th>
+          <th>核心重點（新手一眼看懂）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="code-tag">GR / AD / PS</span></td><td>General / Admin / Pre-Sub</td><td>p.5–18</td><td>賽事總則、學生資格、賽前必交文件（SES、IAD、Cost、Design Briefing）與遲交罰則</td></tr>
+        <tr><td><span class="code-tag">V</span></td><td>Vehicle Requirements</td><td>p.19</td><td>基本幾何紅線：開輪單座、軸距 ≥ 1,525 mm、輪距比 ≥ 75%、懸吊行程 ≥ 50 mm</td></tr>
+        <tr><td><span class="code-tag red">F</span></td><td>Chassis & Structural</td><td>p.23</td><td>主/前防滾架、95% 模型 Percy、正面撞擊（IA + AIP）、側面防撞（SIS）與單體殼 SES</td></tr>
+        <tr><td><span class="code-tag">T / VE</span></td><td>Technical / Equipment</td><td>p.56–80</td><td>座艙模板、三維隔熱、防火牆、雙迴路煞車、BOTS、空力邊界、關鍵螺絲與防火裝備</td></tr>
+        <tr><td><span class="code-tag amber">IC</span></td><td>Internal Combustion</td><td>p.81</td><td><strong>IC 組核心</strong>：≤ 710 cc 四行程、20/19 mm 限流閥、油路、排氣禁包隔熱布、斷電迴路</td></tr>
+        <tr><td><span class="code-tag dim">EV</span></td><td>Electric Vehicles</td><td>p.92</td><td>電動車高壓電池箱與電控（IC 內燃機組不適用，可略過）</td></tr>
+        <tr><td><span class="code-tag red">IN</span></td><td>Technical Inspection</td><td>p.115</td><td>賽前四關卡車檢：機械/模板 → 45°/60° 傾斜 → 103/110 dBC 噪音與開關 → 煞車測試</td></tr>
+        <tr><td><span class="code-tag">S / D</span></td><td>Static & Dynamic Events</td><td>p.125–147</td><td>靜態 325 分（簡報/成本/設計）與動態 675 分（加速/八字/計時/耐久/節能）計分公式</td></tr>
+      </tbody>
+    </table>
+    <div class="src-foot">
+      <span>Wiki：wiki/rulebook-structure.md ｜ wiki/glossary.md</span>
+      <span>來源：FSAE_Rules_2027_V1.pdf (TOC, pp.2–4)</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: CHASSIS & PASSIVE SAFETY -->
+  <section class="slide" data-title="F 節：車架生存空間與 Percy 模型">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">F 節 · 車架安全</span> STEP 3 · 保命第一道防線</div>
+      <h2>生存空間設計：防滾架、Percy 模型與正面撞擊三道防線</h2>
+      <p class="subtitle">無論鋼管車架或碳纖維單體殼，都必須在翻覆、正撞與側撞下保護車手全身。</p>
+    </div>
+    <div class="grid-60-40">
+      <div class="card accent-red">
+        <h3>🛡️ 正面與側面保護結構</h3>
+        <ul>
+          <li><strong>主／前防滾架（F.5.6）</strong>：須以三角形斜撐接入主結構；彎管半徑 <strong>≥ 3 × OD</strong> 且不得皺褶（F.5.2.1）。</li>
+          <li><strong>正面撞擊三道防線（F.8）</strong>：
+            <br>① <strong>IA（吸能緩衝器）</strong>：車頭潰縮盒（可用標準 IA 或自製並交 IAD）。
+            <br>② <strong>AIP（防侵入板）</strong>：如 <strong>≥ 4.0 mm 實心鋁板</strong>；螺栓鎖附須 ≥ 8 顆 8 mm 關鍵螺絲、中心距 ≥ 50 mm、單顆 15 kN（F.8.2.3）。
+            <br>③ <strong>前隔板（Front Bulkhead）</strong>：車手腳部須完全位於其後方。</li>
+          <li><strong>單體殼與 SES（F.4 / F.7）</strong>：非基準鋼管須提交 SES 試算表與夾心板實體測試；膠合強度一律<strong>折減 50%</strong>（F.5.5.3）；安全帶鎖點須承受 <strong>≥ 15 kN</strong>（距離 &lt;125 mm 時須 ≥ 30 kN）。</li>
+        </ul>
+      </div>
+      <div class="card accent-amber" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <h3>📏 95% 男性模板「Percy」（F.5.6.5）</h3>
+          <p style="margin-bottom:10px;">用來檢驗防滾架保護線與頭盔間隙的標準二維人體模型：</p>
+        </div>
+        <!-- Inline SVG Diagram of Percy -->
+        <svg viewBox="0 0 320 205" style="width:100%; height:auto; background:#0d1322; border-radius:8px; border:1px solid rgba(148,163,184,0.18);">
+          <!-- Roll hoop line -->
+          <line x1="255" y1="22" x2="72" y2="95" stroke="#f43f5e" stroke-width="2.5" stroke-dasharray="6,4"/>
+          <text x="112" y="42" fill="#f43f5e" font-size="11" font-weight="700">防滾保護連線（須避開頭盔）</text>
+          <!-- Main & Front Hoop markers -->
+          <line x1="255" y1="22" x2="255" y2="180" stroke="#94a3b8" stroke-width="4"/>
+          <text x="235" y="195" fill="#cbd5e1" font-size="10">Main Hoop</text>
+          <line x1="72" y1="95" x2="72" y2="180" stroke="#94a3b8" stroke-width="4"/>
+          <text x="45" y="195" fill="#cbd5e1" font-size="10">Front Hoop</text>
+          <!-- Floor -->
+          <line x1="25" y1="180" x2="295" y2="180" stroke="#475569" stroke-width="2"/>
+          <!-- Percy circles: Head 300mm, Shoulder 200mm, Hip 200mm -->
+          <circle cx="212" cy="70" r="28" fill="rgba(245,158,11,0.18)" stroke="#f59e0b" stroke-width="2"/>
+          <text x="193" y="73" fill="#fef3c7" font-size="10" font-weight="700">Ø300mm</text>
+          <circle cx="195" cy="118" r="19" fill="rgba(56,189,248,0.18)" stroke="#38bdf8" stroke-width="2"/>
+          <text x="177" y="121" fill="#e0f2fe" font-size="9">Ø200</text>
+          <circle cx="145" cy="158" r="19" fill="rgba(56,189,248,0.18)" stroke="#38bdf8" stroke-width="2"/>
+          <text x="127" y="161" fill="#e0f2fe" font-size="9">Ø200</text>
+          <!-- Center lines -->
+          <line x1="212" y1="70" x2="195" y2="118" stroke="#f59e0b" stroke-width="1.5"/>
+          <line x1="195" y1="118" x2="145" y2="158" stroke="#38bdf8" stroke-width="1.5"/>
+          <text x="214" y="102" fill="#f59e0b" font-size="9.5">280 mm</text>
+          <text x="172" y="152" fill="#38bdf8" font-size="9.5">490 mm</text>
+          <!-- Pedal distance -->
+          <line x1="35" y1="158" x2="124" y2="158" stroke="#34d399" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <text x="42" y="151" fill="#34d399" font-size="9.5">距踏板 ≥ 915 mm</text>
+        </svg>
+        <p style="font-size:12px; color:var(--muted); margin-top:8px;">座椅調至最後、踏板調至最前，頭圓距頭枕 ≤ 25 mm（F.5.6.6）。</p>
+      </div>
+    </div>
+    <div class="src-foot">
+      <span>Wiki：wiki/chassis-and-passive-safety.md</span>
+      <span>來源：FSAE_Rules_2027_V1.pdf (F.4–F.8, pp.31–45)</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: V / T / VE -->
+  <section class="slide" data-title="V / T 節：車體幾何、隔熱防火牆與雙迴路煞車">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">V / T 節 · 車體與控制</span> STEP 4 · 座艙與機械底線</div>
+      <h2>車體幾何、三維隔熱防火牆與煞車保命機制</h2>
+      <p class="subtitle">除了車架要硬，車手在座艙內必須「看得到、燙不到、踩得住、5 秒逃得出」。</p>
+    </div>
+    <div class="grid-3">
+      <div class="card accent-cyan">
+        <h3>📐 車體幾何紅線（V 節）</h3>
+        <ul>
+          <li><strong>開輪式（V.1.1）</strong>：輪胎頂部 180° 與側面無遮蔽，前後各 <strong>75 mm</strong> 禁區內不得有車體構件。</li>
+          <li><strong>軸距 / 輪距</strong>：軸距 <strong>≥ 1,525 mm</strong>；較窄輪距 ≥ 較寬側 <strong>75%</strong>。</li>
+          <li><strong>離地高（V.1.4.2）</strong>：下側撞結構最低點距地 <strong>≤ 90 mm</strong>（建議 ≤ 75 mm），禁止刻意磨地。</li>
+          <li><strong>視野與懸吊</strong>：左右視野各 ≥ 100°；坐車手時輪行程 <strong>≥ 50 mm</strong>。</li>
+        </ul>
+      </div>
+      <div class="card accent-amber">
+        <h3>🔥 座艙隔熱與防火牆（T.1）</h3>
+        <ul>
+          <li><strong>防火牆（T.1.8）</strong>：完整隔開車手與燃油、機油、冷卻水與鋰電池。</li>
+          <li><strong>三種傳熱全隔絕（T.1.6.3）</strong>：
+            <br>① 傳導：不接觸或 <strong>≥ 8 mm</strong> 隔熱材
+            <br>② 對流：<strong>≥ 25 mm</strong> 空氣間隙
+            <br>③ 輻射：<strong>≥ 0.4 mm</strong> 金屬隔熱板</li>
+          <li><strong>底板封閉（T.1.7）</strong>：非脆性實心板，拼縫 <strong>≤ 3 mm</strong>。</li>
+          <li><strong>頭枕護墊</strong>：SFI 45.2 / FIA CF45 泡棉 <strong>≥ 38 mm</strong>（T.2.8.7）。</li>
+        </ul>
+      </div>
+      <div class="card accent-red">
+        <h3>🛑 雙迴路煞車與 BOTS（T.3）</h3>
+        <ul>
+          <li><strong>雙獨立液壓迴路（T.3.1）</strong>：單一踏板控四輪，任一油路失效仍保有至少兩輪制動力。</li>
+          <li><strong>踏板強度 2,000 N（T.3.2.2）</strong>：車檢時裁判可能坐進去全力猛踩驗證不變形！</li>
+          <li><strong>BOTS 超行程開關（T.3.3）</strong>：油路失壓踏板踩到底時，機械開關鎖定 OFF 並直接切斷 <strong>Shutdown Circuit</strong> 熄火。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout cyan">
+      💡 <strong>新手最常踩雷的細節（T.1.1 座艙模板）</strong>：檢驗座艙開口時可拆方向盤與座椅，但<strong>不可拆防火牆與排檔桿</strong>；走線與油管如果擋住模板下沉，現場就得拆掉重拉！
+    </div>
+    <div class="src-foot">
+      <span>Wiki：wiki/driver-ergonomics-and-controls.md</span>
+      <span>來源：FSAE_Rules_2027_V1.pdf (V.1–V.3, T.1–T.3, pp.19–20, 56–66)</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: IC POWERTRAIN -->
+  <section class="slide" data-title="IC 節：710 cc 與 20 mm 進氣限流閥">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">IC 節 · 內燃機動力</span> STEP 5 · IC 組的靈魂規範</div>
+      <h2>為什麼 IC 組馬力都差不多？關鍵在「20 mm 進氣限流閥」</h2>
+      <p class="subtitle">IC 節透過排氣量上限與單一圓形限流閥，把競爭焦點從「砸錢買大引擎」轉向進氣流場、調校與輕量化。</p>
+    </div>
+    <div class="grid-2">
+      <div class="card accent-amber">
+        <h3>⚙️ 引擎與進氣限流閥（IC.1–IC.2）</h3>
+        <ul>
+          <li><strong>引擎規格（IC.1.1）</strong>：四行程活塞引擎，總排氣量 <strong>≤ 710 cc</strong>；禁止油電混合（IC.1.1.2）。</li>
+          <li><strong>單一圓形限流閥（IC.2.4.3）</strong>：100% 進氣必須通過不可變形圓孔：
+            <br>• 汽油（Gasoline）：最大直徑 <strong>20.0 mm</strong>
+            <br>• E85（85% 乙醇）：最大直徑 <strong>19.0 mm</strong></li>
+          <li><strong>音速阻塞效應</strong>：高轉時氣流在 20 mm 喉部達到音速極限，馬力被自然鎖在約 70–90 hp，集氣箱設計與減重因此成為關鍵。</li>
+          <li><strong>增壓強制順序（IC.2.4.2.b）</strong>：限流閥 → 壓縮機 → 節氣門 → 引擎（且限流閥至節氣門間管徑截面積 ≤ 2,825 mm²）。</li>
+        </ul>
+      </div>
+      <div class="card accent-red">
+        <h3>🔥 油路、排氣與斷電迴路（IC.6–IC.9）</h3>
+        <ul>
+          <li><strong>高壓直噴管路（IC.6.2）</strong>：≥ 10 Bar 油管須用不鏽鋼硬管或核准 PTFE 編織管，且每 <strong>100 mm</strong> 剛性固定。</li>
+          <li><strong>排氣出口與安全（IC.7.2）</strong>：不得超過後軸後方 <strong>45 cm</strong>、離地 <strong>≤ 60 cm</strong>；<strong>嚴禁包覆隔熱布（Header Wrap, IC.7.2.4）</strong> 以免吸油起火！</li>
+          <li><strong>車載啟動馬達（IC.8.1）</strong>：任何時刻皆須能靠車上馬達自行發動（耐久賽換手後不能推發）。</li>
+          <li><strong>斷電迴路（IC.9.1）</strong>：外部主斷電開關 + 座艙主開關 + BOTS，任一觸發立即切斷點火與油泵。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      🔧 <strong>實務固定紅線（IC.2.3）</strong>：進氣歧管與油軌必須以金屬支架與防鬆螺絲鎖附於引擎本體——<strong>管束（Hose Clamps）、塑膠束帶、保險絲一律不合格</strong>！
+    </div>
+    <div class="src-foot">
+      <span>Wiki：wiki/ic-powertrain-rules.md</span>
+      <span>來源：FSAE_Rules_2027_V1.pdf (IC.1–IC.9, pp.81–90)</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: INTERACTIVE TECH INSPECTION GAUNTLET -->
+  <section class="slide" data-title="IN 節：IC 車檢四關卡（互動闖關）">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">IN 節 · 技術車檢</span> STEP 6 · 互動闖關（點擊關卡查看細節）</div>
+      <h2>集滿 4 張車檢貼紙，才能拿到動態賽道入場券！</h2>
+      <p class="subtitle">車檢必須嚴格按順序過關，不能跳級。IC 組不考 EV 的淋雨測試（IN.13），而是必考噪音與斷電開關測試（IN.12）。</p>
+    </div>
+
+    <div class="gauntlet-tabs" id="gauntletTabs">
+      <button class="gauntlet-btn active" data-step="0">
+        <div class="step-num">STATION 1 · IN.4 / IN.6–9</div>
+        <div class="step-title">🔧 機械與模板車檢</div>
+      </button>
+      <button class="gauntlet-btn" data-step="1">
+        <div class="step-num">STATION 2 · IN.11</div>
+        <div class="step-title">📐 45° / 60° 傾斜測試</div>
+      </button>
+      <button class="gauntlet-btn" data-step="2">
+        <div class="step-num">STATION 3 · IN.12 (IC)</div>
+        <div class="step-title">🔊 噪音與開關測試</div>
+      </button>
+      <button class="gauntlet-btn" data-step="3">
+        <div class="step-num">STATION 4 · IN.14 (IC)</div>
+        <div class="step-title">🛑 四輪鎖死煞車測試</div>
+      </button>
+    </div>
+
+    <div class="card accent-red" id="gauntletDetail" style="flex:1;"></div>
+
+    <div class="src-foot">
+      <span>Wiki：wiki/technical-inspection-gauntlet.md</span>
+      <span>來源：FSAE_Rules_2027_V1.pdf (IN.1–IN.15, pp.115–122)</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: INTERACTIVE 1000-POINT SCORING -->
+  <section class="slide" data-title="S / D 節：1,000 分制互動配分拆解">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">S / D 節 · 賽制計分</span> STEP 7 · 點擊項目查看計分重點</div>
+      <h2>1,000 分怎麼拿？可靠度決定了 37.5% 的勝負！</h2>
+      <p class="subtitle">靜態 325 分（32.5%）＋ 動態 675 分（67.5%）＝ 1,000 分。只靠「車快」或「簡報強」都拿不到總冠軍。</p>
+    </div>
+    <div class="grid-60-40">
+      <div class="card">
+        <h3>📊 2027 FSAE 完整配分表（點擊各項目檢視細節）</h3>
+        <div id="scoreBars" style="margin-top:10px;"></div>
+      </div>
+      <div class="card accent-amber" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div id="scoreDetail"></div>
+        <div class="callout red" style="margin-top:14px;">
+          🏆 <strong>奪分鐵律</strong>：<strong>耐久賽（275）+ 節能（100）= 375 分</strong>！未跑完 22 km 耐久賽（DNF）就拿不到節能分。歷年超過半數車隊在耐久賽退賽，能穩穩完賽就已贏過一半對手。
+        </div>
+      </div>
+    </div>
+    <div class="src-foot">
+      <span>Wiki：wiki/competition-scoring-1000pts.md</span>
+      <span>來源：FSAE_Rules_2027_V1.pdf (S.1 p.125, D.1–D.13 pp.132–145)</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: IC DESIGN SCORE SHEET -->
+  <section class="slide" data-title="S.4：工程設計 150 分評分結構">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">S.4 · 工程設計</span> STEP 8 · 評審怎麼問問題？</div>
+      <h2>工程設計 150 分：7 大子系統 × 4 大評核面向</h2>
+      <p class="subtitle">設計評審不是在挑「最快的車」，而是在檢驗你是否真的懂「為什麼這樣設計、做過什麼驗證」。</p>
+    </div>
+    <div class="grid-2">
+      <div class="card accent-cyan">
+        <h3>🧩 IC 設計評分表 7 大子系統（合計 150 分）</h3>
+        <table style="margin-top:8px;">
+          <tbody>
+            <tr><td><strong>Powertrain（IC 動力與調校）</strong></td><td style="text-align:right; color:var(--amber); font-weight:800;">30 分</td></tr>
+            <tr><td><strong>Chassis（車架、結構與緊固件）</strong></td><td style="text-align:right; color:var(--amber); font-weight:800;">30 分</td></tr>
+            <tr><td><strong>Overall Vehicle（整車整合與目標）</strong></td><td style="text-align:right; color:var(--cyan); font-weight:800;">25 分</td></tr>
+            <tr><td><strong>Vehicle Dynamics（輪胎、懸吊與操穩）</strong></td><td style="text-align:right; color:var(--cyan); font-weight:800;">25 分</td></tr>
+            <tr><td><strong>Aerodynamics（空力與散熱）</strong></td><td style="text-align:right; color:var(--green); font-weight:800;">15 分</td></tr>
+            <tr><td><strong>Driver Interface（人因、煞車與脫逃）</strong></td><td style="text-align:right; color:var(--green); font-weight:800;">15 分</td></tr>
+            <tr><td><strong>Low Voltage / DAQ（低壓電系與數據）</strong></td><td style="text-align:right; color:var(--purple); font-weight:800;">10 分</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card accent-purple">
+        <h3>🔍 每個子系統都看 4 大面向（各 ~25%）</h3>
+        <ul>
+          <li><strong>Design（25%）</strong>：有比較過替代方案嗎？背後的物理原理與 CAE 模擬是什麼？</li>
+          <li><strong>Build（25%）</strong>：實車與設計報告一致嗎？製造工藝與品質到位嗎？</li>
+          <li><strong>Refinement / Validation（25%）</strong>：實車測試與模擬預測有落差時，怎麼記錄並修正？</li>
+          <li><strong>Understanding（25%）</strong>：現場學生真的懂車嗎？如果重做一次會怎麼改進？</li>
+        </ul>
+        <div class="callout" style="margin-top:12px;">
+          📄 <strong>2027 Design Briefing 提交紅線</strong>：PDF <strong>&lt; 25 MB</strong>、總頁數 <strong>≤ 56 頁</strong>（無人車 ≤ 63 頁），字體 ≥ 12 pt（建議 16+ pt），必附整車配分目標與重量分配圓餅圖。
+        </div>
+      </div>
+    </div>
+    <div class="src-foot">
+      <span>Wiki：wiki/competition-scoring-1000pts.md</span>
+      <span>來源：2026-_FSAE_IC_Design_Score_Sheet_20251008.pdf ｜ 2027_Design_Briefing_Template.pdf</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: 2027 SDF SCENARIO -->
+  <section class="slide" data-title="2027 靜態新制：Software-Defined Feature">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">2027 新制 · S.2 + S.3</span> STEP 9 · 簡報與成本首度共題</div>
+      <h2>2027 重磅新制：Software-Defined Feature（SDF）共題</h2>
+      <p class="subtitle">2027 年商業簡報（75 分）與成本情境題（100 分）雖獨立評分，但共用同一個「軟體定義車輛功能」補助提案情境！</p>
+    </div>
+    <div class="grid-2">
+      <div class="card accent-cyan">
+        <h3>🎤 商業簡報三輪淘汰賽（75 分）</h3>
+        <ul>
+          <li><strong>核心題目</strong>：向 SAE 補助委員會提案一項<strong>以軟體為主、不需大幅改動硬體</strong>的車載功能，提升安全／效率／性能，並規劃如何擴展至<strong>乘用車或商用車隊</strong>。</li>
+          <li><strong>Round 1 書面 RFP（20 分尺規）</strong>：上限 <strong>8 頁</strong>、≥ 12 pt（內容 10 + 組織 5 + 溝通視覺 5）。</li>
+          <li><strong>Round 2 線上簡報（50 分尺規）</strong>：MS Teams <strong>10 分鐘簡報（超時即停）+ 5 分鐘 Q&A</strong>（內容 15 + 組織 10 + 表達 10 + 媒體 7 + 問答 8）。</li>
+          <li><strong>Round 3 決賽</strong>：晉級隊伍於 Michigan International Speedway 現場簡報爭前三名。</li>
+        </ul>
+      </div>
+      <div class="card accent-amber">
+        <h3>💰 成本情境題（Cost Scenario）與官方 FAQ 眉角</h3>
+        <ul>
+          <li><strong>賽前繳件（&lt; 25 MB 合併 PDF）</strong>：Document Index + <strong>Costed BOM（須含 R&D 研發成本！）</strong> + 功能說明（≤ 5 頁）+ 工程圖（≤ 5 頁）。</li>
+          <li><strong>現場 15 分鐘答辯</strong>：須帶<strong>紙本 1 頁摘要</strong>（不可含新資訊）與完整繳件紙本。</li>
+          <li><strong>官方 FAQ 四大重點</strong>：
+            <br>• 不必在賽場實裝展示，但須符合 IC 車型架構。
+            <br>• <strong>必須揭露 AI 使用情形</strong>（開發功能或 AI 輔助寫程式皆須納入工時估算）。
+            <br>• 補助金額無上限，簡報只需估研發工時（不須換算美元時薪）。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="src-foot">
+      <span>Wiki：wiki/2027-static-sdf-scenario.md</span>
+      <span>來源：2027 Presentation Concept / Cost Scenario / 2 份評分尺規 / 官方 FAQ（共 5 份 PDF）</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: FSAEJ LOCAL RULES -->
+  <section class="slide" data-title="2026 日本站（FSAEJ）在地規則差異">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">FSAEJ Local Rules</span> STEP 10 · 亞洲車隊實戰防雷</div>
+      <h2>要去日本比 FSAEJ？六大在地規則覆寫條文必看</h2>
+      <p class="subtitle">只讀全球規則書去日本很容易現場翻車！以下整理《2026 FSAEJ Local Rules 第 4 版》對 IC 車隊的關鍵差異。</p>
+    </div>
+    <div class="grid-3">
+      <div class="card accent-red">
+        <h3>⛽ 動力與安全紅線</h3>
+        <ul>
+          <li><strong>僅供 RON 100 汽油（J2026-IC-02）</strong>：現場不提供 E85，IC 車統一以 20.0 mm 汽油規範為主。</li>
+          <li><strong>紅色主斷電開關（J2026-IC-05）</strong>：主斷電開關必為紅色，座艙內<strong>其他開關一律禁用紅色</strong>。</li>
+          <li><strong>免電排油（J2026-IC-04）</strong>：須具備免電動油泵排空油箱的機構。</li>
+        </ul>
+      </div>
+      <div class="card accent-amber">
+        <h3>🧱 材質與車檢實務</h3>
+        <ul>
+          <li><strong>防火牆厚度（J2026-T-06）</strong>：≥ 0.5 mm 鋼板或 ≥ 0.7 mm 鋁板，<strong>明文禁止鋁箔膠帶</strong>。</li>
+          <li><strong>集油壺耐熱（J2026-T-07）</strong>：IC 冷卻水壺 <strong>≥ 120°C</strong>、機油壺 <strong>≥ 140°C</strong>。</li>
+          <li><strong>旗號考試（J2026-D-01）</strong>：車手須現場通過旗號口試領取手環才准下場。</li>
+        </ul>
+      </div>
+      <div class="card accent-cyan">
+        <h3>🏁 賽制與文件嚴格門檻</h3>
+        <ul>
+          <li><strong>145% 耐久賽門檻（J2026-D-04）</strong>：Autocross 單圈未進同組最快 <strong>145% 以內</strong>，禁止參加耐久與節能賽！</li>
+          <li><strong>設計簡報 16 pt 紅線（J2026-S-20）</strong>：小於 16 pt 的字直接不閱讀並判重新設計不足（比全球 12 pt 更嚴）。</li>
+          <li><strong>賽後噪音複測（J2026-IN-07）</strong>：耐久賽後禁改 Map；超標 +1~2 dB 扣 10 分，&gt;2 dB 扣 20 分。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="src-foot">
+      <span>Wiki：wiki/fsaej-local-rules-diff.md</span>
+      <span>來源：2026_FSAEJ_LocalRule_4th_20260616.pdf (36 頁)</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 12: APPENDIX LOOP / GRAPH -->
+  <section class="slide" data-title="附錄：LLM Wiki 與簡報生成 Loop / Graph">
+    <div class="slide-header">
+      <div class="kicker"><span class="pill">作業附錄 · 步驟三 & 四</span> HOW THIS DECK WAS BUILT</div>
+      <h2>這份簡報如何誕生？LLM Wiki 雙迴圈（Loop / Graph）總覽</h2>
+      <p class="subtitle">完整設計說明與真實踩雷反思見專案根目錄 REPORT.md；本頁呈現經過 Shift-Left 改良後的最終流程。</p>
+    </div>
+    <div class="grid-2">
+      <div class="card accent-cyan">
+        <h3>🔄 Loop A：Wiki 建置與維護迴圈（含 A0 前移閘門）</h3>
+        <ul>
+          <li><strong>A0 原始檔完整性閘門（Shift-Left 新增）</strong>：確認 <code>raw/</code> 僅存放真實一手官方 PDF（9 份、244 頁），杜絕二手摘要汙染。</li>
+          <li><strong>A1 PDF 抽取與版本標記</strong>：分離 <code>2027 Global Rules</code> 與 <code>2026 FSAEJ Local Rules</code>，避免跨分站數值混用。</li>
+          <li><strong>A2 編譯知識庫</strong>：產出 9 頁繁中 Wiki（含精確條號引用與 <code>[[wikilinks]]</code>）。</li>
+          <li><strong>A3 自動化 Wiki Lint（回退迴圈）</strong>：Python 檢查 0 斷鏈、0 孤兒頁、9 份 PDF 100% 被引用、所有分數算術總和無誤。</li>
+        </ul>
+      </div>
+      <div class="card accent-green">
+        <h3>🎯 Loop B：教學型 HTML 簡報編譯迴圈</h3>
+        <ul>
+          <li><strong>B1–B2 學習路徑與單一真相查詢</strong>：只從 <code>wiki/index.md</code> 與知識頁取經，不直接憑記憶亂寫規則。</li>
+          <li><strong>B3–B4 雙重檢查閘門</strong>：逐頁回查 Wiki 條號數值（如 20/19 mm、103/110 dBC、325+675=1000）並壓低新手認知負荷。</li>
+          <li><strong>B5–B6 生成與程式實測</strong>：產出單檔離線 HTML，自動檢核 JS 互動元件、12 頁索引與關鍵數值一致性。</li>
+          <li><strong>真實反思摘要</strong>：初版因 <code>raw/</code> 混入網路二手摘要導致章節碼與配分算術出錯，因此將驗證大幅前移至 <strong>A0 / A1</strong>（詳見 <code>REPORT.md</code>）。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="num cyan">9 份 PDF</div><div class="lbl">raw/ 不可變一手原始檔</div></div>
+      <div class="stat"><div class="num green">9 頁 Wiki</div><div class="lbl">0 斷鏈 · 0 孤兒頁 · 100% 溯源</div></div>
+      <div class="stat"><div class="num">12 頁簡報</div><div class="lbl">離線單檔 · 含 2 組互動圖表</div></div>
+      <div class="stat"><div class="num red">Shift-Left</div><div class="lbl">將來源與版本檢查前移至 A0/A1</div></div>
+    </div>
+    <div class="src-foot">
+      <span>完整流程圖與反思報告：REPORT.md ｜ 系統規範：SCHEMA.md ｜ 執行紀錄：wiki/log.md</span>
+      <span>感謝瀏覽 — Formula SAE (IC) LLM Wiki</span>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const counterEl = document.getElementById('counter');
+  const progressEl = document.getElementById('progress');
+  const drawer = document.getElementById('drawer');
+  const drawerList = document.getElementById('drawerList');
+  let current = 0;
+
+  // Build drawer TOC
+  slides.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'drawer-item';
+    btn.innerHTML = `<span class="drawer-num">${String(i + 1).padStart(2, '0')}</span><span>${s.dataset.title}</span>`;
+    btn.addEventListener('click', () => { goTo(i); drawer.classList.remove('open'); });
+    drawerList.appendChild(btn);
+  });
+
+  function goTo(idx) {
+    current = Math.max(0, Math.min(slides.length - 1, idx));
+    slides.forEach((s, i) => s.classList.toggle('active', i === current));
+    counterEl.textContent = `${current + 1} / ${slides.length}`;
+    progressEl.style.width = `${((current + 1) / slides.length) * 100}%`;
+    Array.from(drawerList.children).forEach((el, i) => el.classList.toggle('active', i === current));
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+  document.getElementById('menuBtn').addEventListener('click', () => drawer.classList.toggle('open'));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); goTo(current + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); goTo(current - 1); }
+    else if (e.key === 'Home') { goTo(0); }
+    else if (e.key === 'End') { goTo(slides.length - 1); }
+    else if (e.key.toLowerCase() === 'm') { drawer.classList.toggle('open'); }
+    else if (e.key === 'Escape') { drawer.classList.remove('open'); }
+  });
+
+  // Slide 7: Interactive Gauntlet
+  const gauntletData = [
+    {
+      title: '第一關：裝備、整車與座艙模板檢查（IN.4, IN.6–IN.9）',
+      points: [
+        '<strong>直接目視原則（IN.2.3）</strong>：所有待檢項目須可直接目視，不得要求裁判用內視鏡或鏡子（護蓋須快拆）。',
+        '<strong>結構與人因核對</strong>：核對 SES/IAD 文件、主/前防滾架、95% 模型 Percy（IN.7）、座艙開口與內部截面模板（IN.8）。',
+        '<strong>車手裝備與 5 秒脫逃（IN.4 / IN.9）</strong>：檢查 SFI/FIA 防火裝備，且每位車手須完成緊急脫逃測驗。',
+        '<strong>IC 動力細節</strong>：以通止規實測 20.0 mm（或 E85 19.0 mm）進氣限流閥、防鬆螺絲與防火牆。'
+      ],
+      tip: '尺寸皆為絕對值無誤差寬容（IN.2.2），出發前務必先用自製模板與卡尺做完整模擬車檢！'
+    },
+    {
+      title: '第二關：傾斜測試 Tilt Test（IN.11）',
+      points: [
+        '<strong>測試條件（IN.11.1）</strong>：油水（汽油、機油、冷卻水）全滿，並由車隊<strong>最高大的車手</strong>穿全套裝備入座。',
+        '<strong>階段一：傾斜 45°（IN.11.2.1）</strong>：向最易漏液側傾斜至 45°，<strong>不得有任何一滴液體滲漏</strong>。',
+        '<strong>階段二：傾斜 60°（IN.11.2.2）</strong>：繼續傾斜至 60°（模擬橫向 1.7 g 過彎），<strong>四輪須保持貼地不翻覆</strong>。',
+        '<strong>高壓直噴提醒</strong>：IC 車若採機械高壓油泵（DI），須先發動加壓下游油路再上台測試。'
+      ],
+      tip: '最常見失敗點是油箱通氣管或冷卻水蓋在 45° 滲水，記得檢查單向閥與集油壺管路！'
+    },
+    {
+      title: '第三關：噪音與開關測試 Noise & Switch Test（IN.12 — IC 專屬）',
+      points: [
+        '<strong>架設位置（IN.12.1.2）</strong>：空檔靜止熱車，麥克風與排氣口同高、距離 <strong>0.5 m</strong>、水平夾角 <strong>45°</strong>。',
+        '<strong>怠速上限（IN.12.5.a）</strong>：<strong>≤ 103 dBC</strong>（Fast 加權）。',
+        '<strong>拉轉上限（IN.12.5.b）</strong>：對應平均活塞速度 914.4 m/min（四捨五入至 500 rpm）以下所有轉速皆須 <strong>≤ 110 dBC</strong>。',
+        '<strong>斷電開關實測（IN.12.7）</strong>：同站直接按壓外部主斷電開關、座艙主開關與/或 BOTS，驗證引擎立即熄火。'
+      ],
+      tip: 'IC 組不考 EV 專屬的淋雨測試（IN.13）；若噪音超標，現場常見解法是重塞消音棉或加裝尾管共振腔。'
+    },
+    {
+      title: '第四關：煞車測試 Brake Test（IN.14 — IC 專屬程序）',
+      points: [
+        '<strong>測試方式（IN.14.2.1）</strong>：直線加速（通常切入二檔）進入指定煞車區後，全力踩下煞車。',
+        '<strong>過關條件一</strong>：<strong>四顆輪胎同時明顯鎖死</strong>並維持直線煞停至完全靜止。',
+        '<strong>過關條件二（IC 特有）</strong>：<strong>煞停全程引擎必須維持運轉不得熄火</strong>（車手須確實踩下離合器）。',
+        '<strong>通關獎勵（IN.15）</strong>：貼上最後一張 Inspection Sticker，正式獲准進入練習區與所有動態計分賽！'
+      ],
+      tip: '前後煞車分配（Brake Bias）沒調好常導致「前輪鎖死、後輪還在滾」，出發前務必在空地反覆實測四輪同時鎖死。'
+    }
+  ];
+
+  const gauntletDetail = document.getElementById('gauntletDetail');
+  const gauntletBtns = Array.from(document.querySelectorAll('.gauntlet-btn'));
+  function renderGauntlet(i) {
+    const d = gauntletData[i];
+    gauntletBtns.forEach((b, idx) => b.classList.toggle('active', idx === i));
+    gauntletDetail.innerHTML = `
+      <h3 style="font-size:18px; margin-bottom:12px;">${d.title}</h3>
+      <ul style="margin-bottom:14px;">${d.points.map(p => `<li style="margin-bottom:8px;">${p}</li>`).join('')}</ul>
+      <div class="callout">💡 <strong>現場實戰提示</strong>：${d.tip}</div>
+    `;
+  }
+  gauntletBtns.forEach((b, i) => b.addEventListener('click', () => renderGauntlet(i)));
+  renderGauntlet(0);
+
+  // Slide 8: Interactive 1000-Point Explorer
+  const scoreItems = [
+    { name: 'Endurance 耐久賽', pts: 275, color: '#f43f5e', cat: '動態項目', desc: '約 22 km 長距離極限測試（平均 48–57 km/h），中場強制換第二位車手且開始後禁修車。含計時 250 分 + 圈數 25 分，是全場權重最高的項目（D.12）。' },
+    { name: 'Design 工程設計', pts: 150, color: '#38bdf8', cat: '靜態項目', desc: '業界資深工程師現場詰問 7 大子系統（動力 30、車架 30、整車 25、車動 25、空力 15、人因 15、低壓 10）與 4 大面向（S.4）。' },
+    { name: 'Autocross 計時賽', pts: 125, color: '#fb7185', cat: '動態項目', desc: '窄彎錐筒單圈衝刺（平均 40–48 km/h），檢驗綜合操控敏捷度，並直接決定耐久賽的起跑順位（D.11）。' },
+    { name: 'Cost 成本與製造', pts: 100, color: '#60a5fa', cat: '靜態項目', desc: '審查整車 BOM 精準度、現場製程討論，以及 2027 年新增的 Software-Defined Feature 成本情境題（含 R&D 成本，S.3）。' },
+    { name: 'Acceleration 加速', pts: 100, color: '#f59e0b', cat: '動態項目', desc: '直線靜止起步衝刺，2 位車手共 4 趟；撞倒錐筒（DOO）每顆加 2 秒，衝出賽道（OC）該趟直接 DNF（D.9）。' },
+    { name: 'Efficiency 節能', pts: 100, color: '#34d399', cat: '動態項目', desc: '於耐久賽期間同步量測耗油量（加滿至刻度線，嚴禁搖晃車體！）。關鍵門檻：只有跑完耐久賽才能拿分（D.13）。' },
+    { name: 'Presentation 簡報', pts: 75, color: '#a78bfa', cat: '靜態項目', desc: '2027 採三輪淘汰制（書面 RFP → 線上 10+5 分鐘 → 現場決賽），聚焦 Software-Defined Feature 補助提案（S.2）。' },
+    { name: 'Skidpad 八字繞錐', pts: 75, color: '#fbbf24', cat: '動態項目', desc: '兩組同心圓（圓心距 18.25 m、內圓徑 15.25 m）右繞兩圈、左繞兩圈，純測側向抓地力；DOO 每顆 +0.125 秒（D.10）。' }
+  ];
+
+  const scoreBars = document.getElementById('scoreBars');
+  const scoreDetail = document.getElementById('scoreDetail');
+  function renderScore(idx) {
+    const item = scoreItems[idx];
+    Array.from(scoreBars.children).forEach((r, i) => r.classList.toggle('selected', i === idx));
+    scoreDetail.innerHTML = `
+      <div class="kicker" style="margin-bottom:6px;"><span class="pill">${item.cat}</span> 佔總分 ${(item.pts / 10).toFixed(1)}%</div>
+      <h3 style="font-size:20px; margin-bottom:10px;">${item.name} — <span style="color:${item.color};">${item.pts} 分</span></h3>
+      <p style="font-size:14.5px; line-height:1.68;">${item.desc}</p>
+      <p style="font-size:12.5px; color:var(--muted); margin-top:12px;">📌 提醒（D.7.1）：每位車手最多參加 3 個動態項目（節能單獨計項），因此車隊<strong>至少須準備 4 位合格車手</strong>！</p>
+    `;
+  }
+  scoreItems.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'score-bar-row';
+    row.innerHTML = `
+      <div class="score-label">${item.name}</div>
+      <div class="score-track"><div class="score-fill" style="width:${(item.pts / 275) * 100}%; background:${item.color};"></div></div>
+      <div class="score-pts" style="color:${item.color};">${item.pts} 分</div>
+    `;
+    row.addEventListener('click', () => renderScore(i));
+    scoreBars.appendChild(row);
+  });
+  renderScore(0);
+  goTo(0);
+</script>
+</body>
+</html>
